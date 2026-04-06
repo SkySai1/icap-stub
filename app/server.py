@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from threading import Thread
 from typing import Iterable
+import logging
 import socket
 import time
 
@@ -30,6 +31,7 @@ class IcapServer:
         self._ports = list(ports)
         self._threads: list[Thread] = []
         self._response_builder = ResponseBuilder()
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     def start(self) -> None:
         """Start listening on configured ports."""
@@ -49,6 +51,7 @@ class IcapServer:
             server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server_socket.bind((port.host, port.handler.port))
             server_socket.listen()
+            self._logger.info("Listening on %s:%s", port.host, port.handler.port)
 
             while True:
                 client_socket, _address = server_socket.accept()
@@ -58,7 +61,8 @@ class IcapServer:
     def _handle_client(self, client_socket: socket.socket, handler: PortHandler) -> None:
         """Handle a single client connection."""
 
-        _ = read_request(client_socket.recv(65535))
+        request_text = read_request(client_socket.recv(65535))
+        self._logger.debug("Received request on port %s: %s", handler.port, request_text)
         plan = handler.plan_response()
 
         if plan.delay_ms:

@@ -21,6 +21,7 @@ class ServerConfig:
     """Top-level server configuration."""
 
     host: str
+    log_level: str
     ports: list[PortConfig]
 
 
@@ -39,6 +40,7 @@ class ConfigLoader:
             raise ValueError("Missing [server] section in config.ini")
 
         host = parser.get("server", "host", fallback="0.0.0.0")
+        log_level = parser.get("server", "log_level", fallback="INFO")
 
         ports: list[PortConfig] = []
         for section in parser.sections():
@@ -58,4 +60,4 @@ class ConfigLoader:
         if not ports:
             raise ValueError("At least one [port:<number>] section is required")
 
-        return ServerConfig(host=host, ports=ports)
+        return ServerConfig(host=host, log_level=log_level, ports=ports)

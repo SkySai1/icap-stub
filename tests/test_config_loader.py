@@ -15,6 +15,7 @@ def test_load_config(tmp_path: Path) -> None:
         """
 [server]
 host = 127.0.0.1
+log_level = DEBUG
 
 [port:1344]
 response_code = 204
@@ -25,6 +26,7 @@ response_delay_ms = 10
     config = ConfigLoader().load(config_path)
 
     assert config.host == "127.0.0.1"
+    assert config.log_level == "DEBUG"
     assert len(config.ports) == 1
     port = config.ports[0]
     assert port.port == 1344

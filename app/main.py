@@ -4,16 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.config.loader import ConfigLoader
+from app.config.loader import ConfigLoader, ServerConfig
 from app.handlers.port_handler import PortHandler
 from app.server import IcapServer, ListeningPort
+from app.services.logging_setup import configure_logging
 
 
-def build_server(config_path: Path) -> IcapServer:
+def build_server(config: ServerConfig) -> IcapServer:
     """Build the ICAP server from configuration."""
-
-    loader = ConfigLoader()
-    config = loader.load(config_path)
 
     ports = [
         ListeningPort(
@@ -34,7 +32,10 @@ def main() -> None:
     """Run the ICAP stub server."""
 
     config_path = Path("config.ini")
-    server = build_server(config_path)
+    loader = ConfigLoader()
+    config = loader.load(config_path)
+    configure_logging(config.log_level)
+    server = build_server(config)
     server.start()
 
 

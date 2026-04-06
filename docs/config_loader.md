@@ -7,11 +7,12 @@ Parse `config.ini` and return structured configuration objects for the server.
 - Path to `config.ini`
 
 ## Outputs
-- `ServerConfig` with host and per-port configuration
+- `ServerConfig` with host, log level, and per-port configuration
 
 ## Conditions and Logic
 - Validate presence of `[server]` section
 - Extract `host`
+- Extract `log_level`
 - Collect every `[port:<number>]` section
 - Require at least one port definition
 
