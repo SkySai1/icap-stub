@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Iterable
 
 
 @dataclass(frozen=True)
@@ -17,7 +18,7 @@ class ResponsePlan:
 class ResponseBuilder:
     """Build ICAP response bytes for a given plan."""
 
-    def build(self, plan: ResponsePlan) -> bytes:
+    def build(self, plan: ResponsePlan, extra_headers: Iterable[str] | None = None) -> bytes:
         """Return ICAP response bytes based on the plan."""
 
         status_text = "OK" if plan.status_code == 200 else "Stub"
@@ -27,7 +28,8 @@ class ResponseBuilder:
             f"Date: {now}",
             "Server: ICAP-Stub",
             "Connection: close",
-            "",
-            "",
         ]
+        if extra_headers:
+            lines.extend(extra_headers)
+        lines.extend(["", ""])
         return "\r\n".join(lines).encode("ascii")

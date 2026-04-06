@@ -13,6 +13,7 @@ Accept ICAP connections on multiple ports and send responses via handlers.
 - Spawn one thread per listening port
 - Accept connections in a loop
 - Delegate response planning to port handlers
+- For OPTIONS requests, include `Methods` header based on allowed methods
 - Send ICAP response and close connection
 
 ## Flow (Mermaid)
@@ -22,6 +23,10 @@ flowchart TD
     B --> C[Listen on port]
     C --> D[Accept connection]
     D --> E[Handle client]
-    E --> F[Send response]
-    F --> D
+    E --> F{OPTIONS?}
+    F -- Yes --> G[Add Methods header]
+    F -- No --> H[Build response]
+    G --> H
+    H --> I[Send response]
+    I --> D
 ```

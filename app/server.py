@@ -87,7 +87,9 @@ class IcapServer:
             method or "UNKNOWN",
             service or "-",
         )
-        plan, requested_service, resolved_service = handler.plan_response(request_text)
+        plan, requested_service, resolved_service, allowed_methods = handler.plan_response(
+            request_text
+        )
         if self._logger.isEnabledFor(logging.DEBUG):
             method_full, uri, version, headers = parse_request_details(request_text)
             self._logger.debug(
@@ -125,5 +127,9 @@ class IcapServer:
         if plan.delay_ms:
             time.sleep(plan.delay_ms / 1000)
 
-        response = self._response_builder.build(plan)
+        extra_headers: list[str] = []
+        if method == "OPTIONS" and resolved_service and allowed_methods:
+            extra_headers.append(f"Methods: {', '.join(allowed_methods)}")
+
+        response = self._response_builder.build(plan, extra_headers=extra_headers)
         client_socket.sendall(response)

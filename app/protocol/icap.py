@@ -34,6 +34,10 @@ def parse_request_line(request_text: str) -> tuple[str, str]:
     if parsed.scheme and parsed.path:
         path = parsed.path.strip("/")
         service = path.split("/")[-1] if path else ""
+        if "?" in service:
+            service = service.split("?", 1)[0]
+        if ";" in service:
+            service = service.split(";", 1)[0]
         return method, unquote(service).lower()
 
     if "/" not in uri:

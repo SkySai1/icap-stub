@@ -87,3 +87,37 @@ response_delay_ms = 0
     response = _send_icap_request("127.0.0.1", port, request)
 
     assert response.startswith("ICAP/1.0 204")
+
+
+def test_options_returns_methods_header(tmp_path: Path) -> None:
+    """OPTIONS response should include available ICAP methods."""
+
+    port = _get_free_port()
+    config_path = tmp_path / ".test-config.ini"
+    config_path.write_text(
+        f"""
+[server]
+host = 127.0.0.1
+log_level = INFO
+default_response_code = 404
+default_response_delay_ms = 0
+
+[service:scan]
+port = {port}
+reqmod = true
+respmod = true
+response_code = 200
+response_delay_ms = 0
+""".strip()
+    )
+    config = ConfigLoader().load(config_path)
+    server = build_server(config)
+    thread = threading.Thread(target=server.start, daemon=True)
+    thread.start()
+
+    _wait_for_port("127.0.0.1", port)
+
+    request = "OPTIONS icap://localhost/scan ICAP/1.0\r\n\r\n"
+    response = _send_icap_request("127.0.0.1", port, request)
+
+    assert "Methods: REQMOD, RESPMOD\r\n" in response
