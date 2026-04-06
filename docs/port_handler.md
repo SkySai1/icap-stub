@@ -10,6 +10,8 @@ Encapsulate response behavior specific to a port.
 
 ## Outputs
 - `ResponsePlan` for response builder
+- Requested service name from ICAP request
+- Resolved service name (or none)
 
 ## Conditions and Logic
 - Parse ICAP request line to determine method and service

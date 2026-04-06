@@ -34,27 +34,36 @@ def test_plan_response_default(test_config: ServerConfig) -> None:
     """Port handler should fall back to default response plan."""
 
     handler = _build_handler(test_config, port=1344)
-    plan = handler.plan_response("")
+    plan, _requested, resolved = handler.plan_response("")
 
     assert plan.status_code == test_config.default_response_code
     assert plan.delay_ms == test_config.default_response_delay_ms
+    assert resolved is None
 
 
 def test_plan_response_reqmod_service(test_config: ServerConfig) -> None:
     """Port handler should return service response for REQMOD."""
 
     handler = _build_handler(test_config, port=1344)
-    plan = handler.plan_response("REQMOD icap://localhost/scan ICAP/1.0\r\n\r\n")
+    plan, requested, resolved = handler.plan_response(
+        "REQMOD icap://localhost/scan ICAP/1.0\r\n\r\n"
+    )
 
     assert plan.status_code == 204
     assert plan.delay_ms == 5
+    assert requested == "scan"
+    assert resolved == "scan"
 
 
 def test_plan_response_respmod_service(test_config: ServerConfig) -> None:
     """Port handler should return service response for RESPMOD."""
 
     handler = _build_handler(test_config, port=1344)
-    plan = handler.plan_response("RESPMOD icap://localhost/rewrite ICAP/1.0\r\n\r\n")
+    plan, requested, resolved = handler.plan_response(
+        "RESPMOD icap://localhost/rewrite ICAP/1.0\r\n\r\n"
+    )
 
     assert plan.status_code == 201
     assert plan.delay_ms == 10
+    assert requested == "rewrite"
+    assert resolved == "rewrite"

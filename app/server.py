@@ -69,7 +69,19 @@ class IcapServer:
             method or "UNKNOWN",
             service or "-",
         )
-        plan = handler.plan_response(request_text)
+        plan, requested_service, resolved_service = handler.plan_response(request_text)
+        if self._logger.isEnabledFor(logging.DEBUG):
+            self._logger.debug(
+                "Service requested on port %s: %s",
+                handler.port,
+                requested_service or "-",
+            )
+            self._logger.debug(
+                "Service resolved on port %s: %s",
+                handler.port,
+                resolved_service or "none",
+            )
+            self._logger.debug("Raw request on port %s:\n%s", handler.port, request_text)
 
         if plan.delay_ms:
             time.sleep(plan.delay_ms / 1000)
