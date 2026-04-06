@@ -132,4 +132,18 @@ class IcapServer:
             extra_headers.append(f"Methods: {', '.join(allowed_methods)}")
 
         response = self._response_builder.build(plan, extra_headers=extra_headers)
+        if self._logger.isEnabledFor(logging.DEBUG):
+            self._logger.debug(
+                "Response decision on port %s: status=%s delay_ms=%s service=%s allowed_methods=%s",
+                handler.port,
+                plan.status_code,
+                plan.delay_ms,
+                resolved_service or "none",
+                ", ".join(allowed_methods) if allowed_methods else "-",
+            )
+            self._logger.debug(
+                "Raw response on port %s:\n%s",
+                handler.port,
+                response.decode("ascii", errors="replace"),
+            )
         client_socket.sendall(response)
