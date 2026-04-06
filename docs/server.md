@@ -1,0 +1,27 @@
+# ICAP Server
+
+## Purpose
+Accept ICAP connections on multiple ports and send responses via handlers.
+
+## Inputs
+- List of `ListeningPort` definitions
+
+## Outputs
+- Network responses to connected clients
+
+## Conditions and Logic
+- Spawn one thread per listening port
+- Accept connections in a loop
+- Delegate response planning to port handlers
+- Send ICAP response and close connection
+
+## Flow (Mermaid)
+```mermaid
+flowchart TD
+    A[Start] --> B[Create threads per port]
+    B --> C[Listen on port]
+    C --> D[Accept connection]
+    D --> E[Handle client]
+    E --> F[Send response]
+    F --> D
+```

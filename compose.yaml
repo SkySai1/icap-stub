@@ -1,0 +1,8 @@
+services:
+  icap-stub:
+    build: .
+    ports:
+      - "1344:1344"
+      - "1345:1345"
+    volumes:
+      - ./config.ini:/app/config.ini:ro

@@ -1,0 +1,68 @@
+"""Network server for accepting ICAP connections."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from threading import Thread
+from typing import Iterable
+import socket
+import time
+
+from app.handlers.port_handler import PortHandler
+from app.protocol.icap import read_request
+from app.services.response_builder import ResponseBuilder
+
+
+@dataclass(frozen=True)
+class ListeningPort:
+    """Definition of a port and its handler."""
+
+    host: str
+    handler: PortHandler
+
+
+class IcapServer:
+    """Accept ICAP connections on multiple ports."""
+
+    def __init__(self, ports: Iterable[ListeningPort]) -> None:
+        """Initialize server with a collection of ports."""
+
+        self._ports = list(ports)
+        self._threads: list[Thread] = []
+        self._response_builder = ResponseBuilder()
+
+    def start(self) -> None:
+        """Start listening on configured ports."""
+
+        for port in self._ports:
+            thread = Thread(target=self._listen_on_port, args=(port,), daemon=True)
+            thread.start()
+            self._threads.append(thread)
+
+        for thread in self._threads:
+            thread.join()
+
+    def _listen_on_port(self, port: ListeningPort) -> None:
+        """Listen for incoming connections on a single port."""
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
+            server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server_socket.bind((port.host, port.handler.port))
+            server_socket.listen()
+
+            while True:
+                client_socket, _address = server_socket.accept()
+                with client_socket:
+                    self._handle_client(client_socket, port.handler)
+
+    def _handle_client(self, client_socket: socket.socket, handler: PortHandler) -> None:
+        """Handle a single client connection."""
+
+        _ = read_request(client_socket.recv(65535))
+        plan = handler.plan_response()
+
+        if plan.delay_ms:
+            time.sleep(plan.delay_ms / 1000)
+
+        response = self._response_builder.build(plan)
+        client_socket.sendall(response)
