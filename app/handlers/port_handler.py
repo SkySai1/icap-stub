@@ -9,18 +9,33 @@ from app.services.response_builder import ResponsePlan
 
 
 @dataclass(frozen=True)
+class ServiceRoute:
+    """Routing rules for a single service."""
+
+    plan: ResponsePlan
+    reqmod: bool
+    respmod: bool
+
+
+@dataclass(frozen=True)
 class PortHandler:
     """Port-specific logic for ICAP responses."""
 
     port: int
-    services: dict[str, dict[str, ResponsePlan]]
+    services: dict[str, ServiceRoute]
     default_plan: ResponsePlan
 
     def plan_response(self, request_text: str) -> tuple[ResponsePlan, str, Optional[str]]:
         """Return response plan with requested and resolved service names."""
 
         method, service = parse_request_line(request_text)
-        if method in self.services and service in self.services[method]:
-            return self.services[method][service], service, service
+        route = self.services.get(service)
+        if route:
+            if method == "OPTIONS":
+                return route.plan, service, service
+            if method == "REQMOD" and route.reqmod:
+                return route.plan, service, service
+            if method == "RESPMOD" and route.respmod:
+                return route.plan, service, service
 
         return self.default_plan, service, None

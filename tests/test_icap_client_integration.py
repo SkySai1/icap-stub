@@ -61,7 +61,8 @@ default_response_delay_ms = 0
 
 [service:scan]
 port = {port}
-method = REQMOD
+reqmod = true
+respmod = false
 response_code = 204
 response_delay_ms = 0
 """.strip()

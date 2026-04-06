@@ -13,7 +13,8 @@ class ServiceConfig:
 
     name: str
     port: int
-    method: str
+    reqmod: bool
+    respmod: bool
     response_code: int
     response_delay_ms: int
 
@@ -57,26 +58,28 @@ class ConfigLoader:
         for section in parser.sections():
             if not section.startswith("service:"):
                 continue
-            service_name = section.split(":", 1)[1].strip()
+            service_name = section.split(":", 1)[1].strip().lower()
             if not service_name:
                 raise ValueError("Service name must be provided in section header.")
 
             port_number = parser.getint(section, "port")
             response_code = parser.getint(section, "response_code", fallback=200)
             response_delay_ms = parser.getint(section, "response_delay_ms", fallback=0)
-            method = parser.get(section, "method", fallback="REQMOD").upper()
+            reqmod = parser.getboolean(section, "reqmod", fallback=False)
+            respmod = parser.getboolean(section, "respmod", fallback=False)
 
-            if method not in {"REQMOD", "RESPMOD"}:
+            if not (reqmod or respmod):
                 raise ValueError(
-                    "Service method must be REQMOD or RESPMOD, got "
-                    f"'{method}'."
+                    "Service must enable reqmod and/or respmod, got none "
+                    f"for '{service_name}'."
                 )
 
             services.append(
                 ServiceConfig(
                     name=service_name,
                     port=port_number,
-                    method=method,
+                    reqmod=reqmod,
+                    respmod=respmod,
                     response_code=response_code,
                     response_delay_ms=response_delay_ms,
                 )

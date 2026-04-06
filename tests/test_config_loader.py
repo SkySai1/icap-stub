@@ -21,12 +21,14 @@ default_response_delay_ms = 7
 
 [service:scan]
 port = 1344
-method = REQMOD
+reqmod = true
+respmod = false
 response_code = 204
 response_delay_ms = 10
 [service:rewrite]
 port = 1344
-method = RESPMOD
+reqmod = false
+respmod = true
 response_code = 201
 response_delay_ms = 5
 """.strip()
@@ -43,13 +45,15 @@ response_delay_ms = 5
     service = config.services[0]
     assert service.name == "scan"
     assert service.port == 1344
-    assert service.method == "REQMOD"
+    assert service.reqmod is True
+    assert service.respmod is False
     assert service.response_code == 204
     assert service.response_delay_ms == 10
 
     service = config.services[1]
     assert service.name == "rewrite"
     assert service.port == 1344
-    assert service.method == "RESPMOD"
+    assert service.reqmod is False
+    assert service.respmod is True
     assert service.response_code == 201
     assert service.response_delay_ms == 5

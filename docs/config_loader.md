@@ -15,7 +15,7 @@ Parse `config.ini` and return structured configuration objects for the server.
 - Extract `log_level`
 - Extract default response settings
 - Collect every `[service:<name>]` section
-- Parse each service method, port, code, and delay
+- Parse each service port, reqmod/respmod flags, code, and delay
 - Require at least one service definition
 
 ## Flow (Mermaid)

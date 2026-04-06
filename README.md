@@ -24,13 +24,15 @@ default_response_delay_ms = 0
 
 [service:scan]
 port = 1344
-method = REQMOD
+reqmod = true
+respmod = false
 response_code = 200
 response_delay_ms = 0
 
 [service:rewrite]
 port = 1344
-method = RESPMOD
+reqmod = false
+respmod = true
 response_code = 200
 response_delay_ms = 10
 ```

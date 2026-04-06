@@ -38,13 +38,19 @@ class IcapServer:
 
         if self._logger.isEnabledFor(logging.DEBUG):
             for port in self._ports:
-                for method, services in port.handler.services.items():
-                    for service_name in services.keys():
+                for service_name, route in port.handler.services.items():
+                    if route.reqmod:
                         self._logger.debug(
-                            "Service ready on %s:%s method=%s service=%s",
+                            "Service ready on %s:%s method=REQMOD service=%s",
                             port.host,
                             port.handler.port,
-                            method,
+                            service_name,
+                        )
+                    if route.respmod:
+                        self._logger.debug(
+                            "Service ready on %s:%s method=RESPMOD service=%s",
+                            port.host,
+                            port.handler.port,
                             service_name,
                         )
 
@@ -87,6 +93,11 @@ class IcapServer:
                 "Service requested on port %s: %s",
                 handler.port,
                 requested_service or "-",
+            )
+            self._logger.debug(
+                "Request method on port %s: %s",
+                handler.port,
+                method or "UNKNOWN",
             )
             self._logger.debug(
                 "Service resolved on port %s: %s",

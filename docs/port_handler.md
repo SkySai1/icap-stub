@@ -5,7 +5,7 @@ Encapsulate response behavior specific to a port.
 
 ## Inputs
 - Port number
-- Services map: method -> service -> response plan
+- Services map: service -> route (reqmod/respmod + plan)
 - Default response plan
 
 ## Outputs
@@ -15,7 +15,7 @@ Encapsulate response behavior specific to a port.
 
 ## Conditions and Logic
 - Parse ICAP request line to determine method and service
-- If service is configured for the method, return its plan
+- If service allows the request method, return its plan
 - Otherwise fall back to default response plan
 
 ## Flow (Mermaid)

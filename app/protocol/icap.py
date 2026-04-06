@@ -34,5 +34,7 @@ def parse_request_line(request_text: str) -> tuple[str, str]:
     service = uri.rsplit("/", 1)[-1]
     if "?" in service:
         service = service.split("?", 1)[0]
+    if ";" in service:
+        service = service.split(";", 1)[0]
 
-    return method, service
+    return method, service.lower()
