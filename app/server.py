@@ -36,6 +36,18 @@ class IcapServer:
     def start(self) -> None:
         """Start listening on configured ports."""
 
+        if self._logger.isEnabledFor(logging.DEBUG):
+            for port in self._ports:
+                for method, services in port.handler.services.items():
+                    for service_name in services.keys():
+                        self._logger.debug(
+                            "Service ready on %s:%s method=%s service=%s",
+                            port.host,
+                            port.handler.port,
+                            method,
+                            service_name,
+                        )
+
         for port in self._ports:
             thread = Thread(target=self._listen_on_port, args=(port,), daemon=True)
             thread.start()
