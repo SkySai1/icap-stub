@@ -23,3 +23,36 @@ def test_parse_request_line_strips_params() -> None:
 
     assert method == "REQMOD"
     assert service == "scan"
+
+
+def test_parse_request_line_trailing_slash() -> None:
+    """Should handle trailing slash in service path."""
+
+    method, service = parse_request_line(
+        "REQMOD icap://localhost/scan/ ICAP/1.0\r\n"
+    )
+
+    assert method == "REQMOD"
+    assert service == "scan"
+
+
+def test_parse_request_line_options() -> None:
+    """Should parse OPTIONS method."""
+
+    method, service = parse_request_line(
+        "OPTIONS icap://localhost/scan ICAP/1.0\r\n"
+    )
+
+    assert method == "OPTIONS"
+    assert service == "scan"
+
+
+def test_parse_request_line_respmod() -> None:
+    """Should parse RESPMOD method."""
+
+    method, service = parse_request_line(
+        "RESPMOD icap://localhost/rewrite ICAP/1.0\r\n"
+    )
+
+    assert method == "RESPMOD"
+    assert service == "rewrite"

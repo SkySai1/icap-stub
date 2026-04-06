@@ -10,7 +10,7 @@ import socket
 import time
 
 from app.handlers.port_handler import PortHandler
-from app.protocol.icap import parse_request_line, read_request
+from app.protocol.icap import parse_request_details, parse_request_line, read_request
 from app.services.response_builder import ResponseBuilder
 
 
@@ -89,6 +89,22 @@ class IcapServer:
         )
         plan, requested_service, resolved_service = handler.plan_response(request_text)
         if self._logger.isEnabledFor(logging.DEBUG):
+            method_full, uri, version, headers = parse_request_details(request_text)
+            self._logger.debug(
+                "Request line on port %s: %s %s %s",
+                handler.port,
+                method_full or "UNKNOWN",
+                uri or "-",
+                version or "-",
+            )
+            if headers:
+                for name, value in headers:
+                    self._logger.debug(
+                        "Request header on port %s: %s: %s",
+                        handler.port,
+                        name,
+                        value,
+                    )
             self._logger.debug(
                 "Service requested on port %s: %s",
                 handler.port,

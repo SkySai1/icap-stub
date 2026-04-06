@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from urllib.parse import unquote, urlparse
+
 
 def read_request(data: bytes) -> str:
     """Decode incoming request bytes to a safe string for logging."""
@@ -28,6 +30,12 @@ def parse_request_line(request_text: str) -> tuple[str, str]:
 
     method = parts[0].upper()
     uri = parts[1]
+    parsed = urlparse(uri)
+    if parsed.scheme and parsed.path:
+        path = parsed.path.strip("/")
+        service = path.split("/")[-1] if path else ""
+        return method, unquote(service).lower()
+
     if "/" not in uri:
         return method, ""
 
@@ -37,4 +45,32 @@ def parse_request_line(request_text: str) -> tuple[str, str]:
     if ";" in service:
         service = service.split(";", 1)[0]
 
-    return method, service.lower()
+    return method, unquote(service).lower()
+
+
+def parse_request_details(request_text: str) -> tuple[str, str, str, list[tuple[str, str]]]:
+    """Parse request line and headers for detailed logging."""
+
+    if not request_text:
+        return "", "", "", []
+
+    lines = request_text.splitlines()
+    if not lines:
+        return "", "", "", []
+
+    first_line = lines[0].strip()
+    parts = first_line.split()
+    method = parts[0].upper() if len(parts) > 0 else ""
+    uri = parts[1] if len(parts) > 1 else ""
+    version = parts[2] if len(parts) > 2 else ""
+
+    headers: list[tuple[str, str]] = []
+    for line in lines[1:]:
+        if not line.strip():
+            break
+        if ":" not in line:
+            continue
+        name, value = line.split(":", 1)
+        headers.append((name.strip(), value.strip()))
+
+    return method, uri, version, headers
