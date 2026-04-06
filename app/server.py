@@ -131,12 +131,20 @@ class IcapServer:
         if method == "OPTIONS" and resolved_service and allowed_methods:
             extra_headers.append(f"Methods: {', '.join(allowed_methods)}")
 
-        response = self._response_builder.build(plan, extra_headers=extra_headers)
+        include_http_response = method in {"REQMOD", "RESPMOD"}
+        icap_status_code = plan.status_code if not include_http_response else 200
+        response = self._response_builder.build(
+            plan,
+            extra_headers=extra_headers,
+            include_http_response=include_http_response,
+            icap_status_code=icap_status_code,
+        )
         if self._logger.isEnabledFor(logging.DEBUG):
             self._logger.debug(
-                "Response decision on port %s: status=%s delay_ms=%s service=%s allowed_methods=%s",
+                "Response decision on port %s: http_status=%s icap_status=%s delay_ms=%s service=%s allowed_methods=%s",
                 handler.port,
                 plan.status_code,
+                icap_status_code,
                 plan.delay_ms,
                 resolved_service or "none",
                 ", ".join(allowed_methods) if allowed_methods else "-",

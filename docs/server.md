@@ -14,6 +14,7 @@ Accept ICAP connections on multiple ports and send responses via handlers.
 - Accept connections in a loop
 - Delegate response planning to port handlers
 - For OPTIONS requests, include `Methods` header based on allowed methods
+- For REQMOD/RESPMOD requests, embed an HTTP response in the ICAP body
 - When debug logging is enabled, log response decision details and raw response
 - Send ICAP response and close connection
 

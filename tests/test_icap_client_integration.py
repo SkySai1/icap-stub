@@ -86,7 +86,9 @@ response_delay_ms = 0
 
     response = _send_icap_request("127.0.0.1", port, request)
 
-    assert response.startswith("ICAP/1.0 204")
+    assert response.startswith("ICAP/1.0 200")
+    assert "Encapsulated: res-hdr=0\r\n" in response
+    assert "HTTP/1.1 204 No Content\r\n" in response
 
 
 def test_options_returns_methods_header(tmp_path: Path) -> None:
