@@ -18,10 +18,21 @@ python -m app.main
 ```ini
 [server]
 host = 0.0.0.0
+log_level = INFO
+default_response_code = 404
+default_response_delay_ms = 0
 
-[port:1344]
+[service:scan]
+port = 1344
+method = REQMOD
 response_code = 200
 response_delay_ms = 0
+
+[service:rewrite]
+port = 1344
+method = RESPMOD
+response_code = 200
+response_delay_ms = 10
 ```
 
 ## Сборка и запуск в Docker
@@ -41,6 +52,11 @@ docker compose up --build
 ```
 
 ## Тесты
+Установка зависимостей для тестов:
+```bash
+pip3 install -r requirements-dev.txt
+```
+
 ```bash
 pytest tests/
 ```

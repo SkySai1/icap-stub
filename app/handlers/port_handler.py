@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from app.protocol.icap import parse_request_line
 from app.services.response_builder import ResponsePlan
 
 
@@ -11,13 +12,14 @@ class PortHandler:
     """Port-specific logic for ICAP responses."""
 
     port: int
-    response_code: int
-    response_delay_ms: int
+    services: dict[str, dict[str, ResponsePlan]]
+    default_plan: ResponsePlan
 
-    def plan_response(self) -> ResponsePlan:
-        """Return a response plan derived from the port configuration."""
+    def plan_response(self, request_text: str) -> ResponsePlan:
+        """Return a response plan derived from the request and config."""
 
-        return ResponsePlan(
-            status_code=self.response_code,
-            delay_ms=self.response_delay_ms,
-        )
+        method, service = parse_request_line(request_text)
+        if method in self.services and service in self.services[method]:
+            return self.services[method][service]
+
+        return self.default_plan

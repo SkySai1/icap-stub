@@ -8,10 +8,12 @@ import configparser
 
 
 @dataclass(frozen=True)
-class PortConfig:
-    """Configuration for a single ICAP port."""
+class ServiceConfig:
+    """Configuration for a single ICAP service."""
 
+    name: str
     port: int
+    method: str
     response_code: int
     response_delay_ms: int
 
@@ -22,7 +24,9 @@ class ServerConfig:
 
     host: str
     log_level: str
-    ports: list[PortConfig]
+    default_response_code: int
+    default_response_delay_ms: int
+    services: list[ServiceConfig]
 
 
 class ConfigLoader:
@@ -42,22 +46,49 @@ class ConfigLoader:
         host = parser.get("server", "host", fallback="0.0.0.0")
         log_level = parser.get("server", "log_level", fallback="INFO")
 
-        ports: list[PortConfig] = []
+        default_response_code = parser.getint(
+            "server", "default_response_code", fallback=404
+        )
+        default_response_delay_ms = parser.getint(
+            "server", "default_response_delay_ms", fallback=0
+        )
+
+        services: list[ServiceConfig] = []
         for section in parser.sections():
-            if not section.startswith("port:"):
+            if not section.startswith("service:"):
                 continue
-            port_number = int(section.split(":", 1)[1])
+            service_name = section.split(":", 1)[1].strip()
+            if not service_name:
+                raise ValueError("Service name must be provided in section header.")
+
+            port_number = parser.getint(section, "port")
             response_code = parser.getint(section, "response_code", fallback=200)
             response_delay_ms = parser.getint(section, "response_delay_ms", fallback=0)
-            ports.append(
-                PortConfig(
+            method = parser.get(section, "method", fallback="REQMOD").upper()
+
+            if method not in {"REQMOD", "RESPMOD"}:
+                raise ValueError(
+                    "Service method must be REQMOD or RESPMOD, got "
+                    f"'{method}'."
+                )
+
+            services.append(
+                ServiceConfig(
+                    name=service_name,
                     port=port_number,
+                    method=method,
                     response_code=response_code,
                     response_delay_ms=response_delay_ms,
                 )
             )
 
-        if not ports:
-            raise ValueError("At least one [port:<number>] section is required")
+        if not services:
+            raise ValueError("At least one [service:<name>] section is required")
 
-        return ServerConfig(host=host, log_level=log_level, ports=ports)
+        return ServerConfig(
+            host=host,
+            log_level=log_level,
+            default_response_code=default_response_code,
+            default_response_delay_ms=default_response_delay_ms,
+            services=services,
+        )

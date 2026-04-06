@@ -5,19 +5,22 @@ Encapsulate response behavior specific to a port.
 
 ## Inputs
 - Port number
-- Response code
-- Response delay in ms
+- Services map: method -> service -> response plan
+- Default response plan
 
 ## Outputs
 - `ResponsePlan` for response builder
 
 ## Conditions and Logic
-- Convert port configuration into a response plan
+- Parse ICAP request line to determine method and service
+- If service is configured for the method, return its plan
+- Otherwise fall back to default response plan
 
 ## Flow (Mermaid)
 ```mermaid
 flowchart TD
-    A[Start] --> B[Read port config]
-    B --> C[Create ResponsePlan]
-    C --> D[Return plan]
+    A[Start] --> B[Parse request line]
+    B --> C{Service configured?}
+    C -- Yes --> D[Return service plan]
+    C -- No --> E[Return default plan]
 ```

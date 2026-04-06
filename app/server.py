@@ -10,7 +10,7 @@ import socket
 import time
 
 from app.handlers.port_handler import PortHandler
-from app.protocol.icap import read_request
+from app.protocol.icap import parse_request_line, read_request
 from app.services.response_builder import ResponseBuilder
 
 
@@ -62,8 +62,14 @@ class IcapServer:
         """Handle a single client connection."""
 
         request_text = read_request(client_socket.recv(65535))
-        self._logger.debug("Received request on port %s: %s", handler.port, request_text)
-        plan = handler.plan_response()
+        method, service = parse_request_line(request_text)
+        self._logger.debug(
+            "Received request on port %s: %s %s",
+            handler.port,
+            method or "UNKNOWN",
+            service or "-",
+        )
+        plan = handler.plan_response(request_text)
 
         if plan.delay_ms:
             time.sleep(plan.delay_ms / 1000)
